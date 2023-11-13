@@ -1274,6 +1274,9 @@ margin-left: 0 !important;
       <ul>
       <li><a href="#part-one" id="toc-part-one">Part One</a></li>
       <li><a href="#part-two" id="toc-part-two">Part Two</a></li>
+      <li><a href="#taking-the-mean-and-standard-deviation-of-the-1000-samples-of-each-coefficient" id="toc-taking-the-mean-and-standard-deviation-of-the-1000-samples-of-each-coefficient">Taking
+      the Mean and Standard Deviation of the 1000 Samples of Each
+      Coefficient</a></li>
       </ul>
     </div>
     <div id="postamble" data-toggle="wy-nav-shift" class="status">
@@ -1293,7 +1296,8 @@ Holden</p>
 <h3>Use library() to access the following packages:</h3>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(curl)</span>
 <span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code></pre></div>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="fu">library</span>(manipulate)</span></code></pre></div>
 </div>
 <div id="part-one" class="section level2">
 <h2>Part One</h2>
@@ -1431,7 +1435,48 @@ Information</h3>
 replacement, each time fitting the same model and calculating the same
 coefficients. This generates a sampling distribution for each β
 coefficient.</h3>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>sample_coef_intercept <span class="ot">&lt;-</span> <span class="cn">NULL</span> <span class="co">#intercept</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>sample_coef_x1 <span class="ot">&lt;-</span> <span class="cn">NULL</span> <span class="co">#slope</span></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">1000</span>) {</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>  <span class="co">#Creating a resampled dataset from the sample data</span></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>  sample_d <span class="ot">=</span> d[<span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(d), <span class="fu">nrow</span>(d), <span class="at">replace =</span> <span class="cn">TRUE</span>), ]</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>  </span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>  <span class="co">#Running the regression on these data</span></span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>  model_bootstrap <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="fu">log</span>(HomeRange_km2) <span class="sc">~</span> <span class="fu">log</span>(Body_mass_female_mean), <span class="at">data =</span> sample_d)</span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a>  </span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a>  <span class="co">#Saving the coefficients</span></span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a>  sample_coef_intercept <span class="ot">&lt;-</span></span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a>    <span class="fu">c</span>(sample_coef_intercept, model_bootstrap<span class="sc">$</span>coefficients[<span class="dv">1</span>])</span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a>  </span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a>  sample_coef_x1 <span class="ot">&lt;-</span></span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a>    <span class="fu">c</span>(sample_coef_x1, model_bootstrap<span class="sc">$</span>coefficients[<span class="dv">2</span>])</span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a>}</span></code></pre></div>
 </div>
+</div>
+<div id="taking-the-mean-and-standard-deviation-of-the-1000-samples-of-each-coefficient" class="section level1">
+<h1>Taking the Mean and Standard Deviation of the 1000 Samples of Each
+Coefficient</h1>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>a<span class="ot">&lt;-</span> <span class="fu">mean</span>(sample_coef_intercept)</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>b<span class="ot">&lt;-</span> <span class="fu">mean</span>(sample_coef_x1)</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>a</span></code></pre></div>
+<pre><code>## [1] -9.469242</code></pre>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>b</span></code></pre></div>
+<pre><code>## [1] 1.039327</code></pre>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>c <span class="ot">&lt;-</span> <span class="fu">sd</span>(sample_coef_intercept)</span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>c</span></code></pre></div>
+<pre><code>## [1] 0.5946698</code></pre>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a>d<span class="ot">&lt;-</span> <span class="fu">sd</span>(sample_coef_x1)</span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>d</span></code></pre></div>
+<pre><code>## [1] 0.07593553</code></pre>
+<p>#Estimating the Standard Errors Based on the Standard Deviation of
+Each Coefficient</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>seI <span class="ot">&lt;-</span> c<span class="sc">/</span><span class="fu">sqrt</span>(<span class="fu">length</span>(sample_coef_intercept))</span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>seII <span class="ot">&lt;-</span> d<span class="sc">/</span><span class="fu">sqrt</span>(<span class="fu">length</span>(sample_coef_x1))</span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a>seI</span></code></pre></div>
+<pre><code>## [1] 0.01880511</code></pre>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a>seII</span></code></pre></div>
+<pre><code>## [1] 0.002401292</code></pre>
 <div id="also-do-the-following" class="section level3">
 <h3>Also do the following:</h3>
 <ul>
