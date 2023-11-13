@@ -2,6 +2,44 @@
 title: "Boots for Days!"
 author: "Lillian Holden"
 date: "2023-11-13"
-output: html_document
+output: rmdformats::readthedown
 ---
 
+### Use library() to access the following packages: 
+```{r message=FALSE, warning=FALSE}
+library(curl)
+library(ggplot2)
+library(tidyverse)
+```
+
+## Part One 
+### Using the “KamilarAndCooperData.csv” dataset, run a linear regression looking at log(HomeRange_km2) in relation to log(Body_mass_female_mean) and report your β coeffiecients (slope and intercept).
+
+### Import the Data Set
+```{r}
+f <- curl("https://raw.githubusercontent.com/fuzzyatelin/fuzzyatelin.github.io/master/AN588_Fall23/KamilarAndCooperData.csv")
+d <- read.csv(f, header = TRUE, sep = ",", stringsAsFactors = FALSE) #Assign D as the vector for the data set
+head(d)
+```
+
+#### Determine the Intercept(B0) and Slope (B1)
+```{r}
+mI <-  lm(log(HomeRange_km2) ~ log(Body_mass_female_mean), data = d)
+summary(mI)
+```
+### Add A Fitted Line to the Scatterplots Using ggplot2 
+```{r warning=FALSE}
+h <- ggplot(data = d, aes(x = log(HomeRange_km2), y = log(Body_mass_female_mean)))
+h <- h + geom_point()
+h <- h + geom_smooth(method = "lm", formula = y ~ x)
+h + annotate("text", x = 2, y = 6.5, label = "y=1.03643 x - 9.44123")
+```
+
+## Part Two 
+### Then, use bootstrapping to sample from your data 1000 times with replacement, each time fitting the same model and calculating the same coefficients. This generates a sampling distribution for each β coefficient.
+
+#### Estimate the standard error for each of your β coefficients as the standard deviation of the sampling distribution from your bootstrap and determine the 95% CI for each of your β coefficients based on the appropriate quantiles from your sampling distribution.
+
+#### How does the former compare to the SE estimated from your entire dataset using the formula for standard error implemented in lm()?
+
+####How does the latter compare to the 95% CI estimated from your entire dataset?
