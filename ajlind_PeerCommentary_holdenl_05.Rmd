@@ -1,0 +1,89 @@
+---
+title: "Boots for Days! Peer Commentary"
+author: "Lillian Holden - Angelique Lindberg"
+date: "2023-11-13"
+output: rmdformats::readthedown
+---
+
+**Hello! My comments will be bold and signed with my initials! -AJL**
+
+### Use library() to access the following packages: 
+```{r message=FALSE, warning=FALSE}
+library(curl)
+library(boot)
+```
+
+## Part One 
+
+### Using the “KamilarAndCooperData.csv” dataset, run a linear regression looking at log(HomeRange_km2) in relation to log(Body_mass_female_mean) and report your β coeffiecients (slope and intercept).
+
+**Like the organization going on here with the embedded hashes, it's very easy to follow. It looks really clean in the html as well. I don't know if you can change the read the down table of contents but it would be cool if it expanded like some of the other themes do, so there's more than just Part 1, Part 2 in the toc. just a thought to show off the organization more. -AJL**
+
+### Import the Data Set
+
+```{r}
+f <- curl("https://raw.githubusercontent.com/fuzzyatelin/fuzzyatelin.github.io/master/AN588_Fall23/KamilarAndCooperData.csv")
+d <- read.csv(f, header = TRUE, sep = ",", stringsAsFactors = FALSE) #Assign D as the vector for the data set
+head(d)
+```
+
+### Determine the Intercept/Slope Coefficients and CIs by Calling The Information
+
+```{r}
+mI <-  lm(log(HomeRange_km2) ~ log(Body_mass_female_mean), data = d)
+summary(mI)
+confint(mI)
+```
+The Slope of This Linear Regression is 1.03643, and the intercept is -9.44123. 
+
+**I like that you did the conidence interval in the same chunk as the rest of the model, but it isn't technically in the instructions there, so maybe explain why/what you're doing. I think you could add some interpretation to your reporting of the results at the end to link back to original data.-AJL**
+
+## Part Two 
+
+### Then, use bootstrapping to sample from your data 1000 times with replacement, each time fitting the same model and calculating the same coefficients. This generates a sampling distribution for each β coefficient.
+
+
+```{r}
+set.seed(1)
+
+#define function to calculate fitted regression coefficients
+coef_function <- function(formula, data, indices) {
+  newdata <- data[indices,] #allows boot to select sample
+  fit <- lm(formula, data=newdata) #fit regression model
+  return(coef(fit)) #return coefficient estimates of model
+}
+
+#perform bootstrapping with 1000 replications
+reps <- boot(data=d, statistic=coef_function, R=1000, formula=log(HomeRange_km2) ~ log(Body_mass_female_mean))
+
+#view results of boostrapping
+reps
+
+```
+
+**This is the method I used to bootstrap as well! The module method did not work for me. I appreciate the notes in the code, very well annotated. -AJL**
+
+### Estimate the standard error for each of your β coefficients as the standard deviation of the sampling distribution from your bootstrap and determine the 95% CI for each of your β coefficients based on the appropriate quantiles from your sampling distribution
+
+```{r}
+boot.ci(reps, type="bca", index=1) #intercept of model
+boot.ci(reps, type="bca", index=2) #slope of model
+```
+**I like the brevity of including both confint in the same chunk, makes the code and reporting very clean (just saying because I tend to embed code in between the end questions, but your way looks especially nice in the knit with all the code and then the comparisons at the end).-AJL** 
+
+### Answer the following questions:
+
+
+#### How does the former compare to the SE estimated from your entire dataset using the formula for standard error implemented in lm()?
+The SE for the intercept of the lm model is 0.67293. The SE for the intercept of the bootstrapping model is 0.62279674. The SE for the slope of the lm model is 0.08488. The SE for the intercept of the bootstrapping model is 0.07927235. 
+The SE for the intercept coeffiient and slope for the lm model and bootstrapping model are very similar. 
+
+
+#### How does the latter compare to the 95% CI estimated from your entire dataset?
+The CIs for the intercept of the lm model are -10.7720889 and -8.110374. The CIs for the intercept of the bootstrapping model are -10.796, and -8.364. The CIs for the slope of the lm model are  0.8685707 and 1.204292. The CIs for the intercept of the bootstrapping model are 0.894 and 1.207. Both CIs for the intercept and slope coefficient of the lm model and bootstrapping are quite similar. 
+
+**Maybe round all these numbers off so they're easier to read and compare? I tend to just skim over numbers that are more than a few decimal places.-AJL**
+
+Information for Part 2 was found at https://www.statology.org/bootstrapping-in-r/
+
+**I know you just copied the questions from the website (at least that's what I do) but the former/latter construction of these last questions is a little confusing when it's broken up like this because you have to scroll up past the code to remember what former/latter is referring to if that makes sense. Tiny edit but I would change it to coefficients and confidence intervals. I appreciate you citing your method for the boot, it's interesting that we did the same thing, but I found mine in the R in Action textbook. Overall, I hope these comments show that I think your code is very clean and well-done and your markdown well-organized, and just mainly had some ideas for small additions and edits to the prose. All the code ran beautifully on my end. Best, Angelique**
